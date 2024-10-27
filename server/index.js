@@ -13,7 +13,7 @@ async function startServer() {
                 id: ID!
                 title: String!
                 completed: Boolean!
-                userId : ID!
+                user: GetUser
             }
 
             type Address {
@@ -36,6 +36,11 @@ async function startServer() {
             }
         `,
         resolvers: {
+            Todos: {
+                user: async (todo) => (
+                    await axios.get(`https://jsonplaceholder.typicode.com/users/${todo.userId}`)
+                ).data
+            },
             Query: {
                 getTodos: async () => (
                     await axios.get("https://jsonplaceholder.typicode.com/todos")
@@ -55,7 +60,7 @@ async function startServer() {
     app.use(bodyParser.json());
     app.use(cors());
     app.use('/graphql', expressMiddleware(server, {
-        context: async ({ req }) => ({}) // Passing an empty context if not needed
+        context: async ({ req }) => ({})
     }));
 
     app.listen(8000, () => {
